@@ -35,9 +35,7 @@ app.whenReady().then(() => {
   createWindow();
   initDb();
 });
-
 let db;
-
 function initDb() {
   db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -60,7 +58,6 @@ function initDb() {
     }
   });
 }
-
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -72,13 +69,12 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
 // IPC Handlers
-ipcMain.on('start-listing', async (event, { url, username, apiKey }) => {
+ipcMain.on('start-listing', async (event, { url, username, apiKey, repository }) => {
   try {
     // Use AQL to list artifacts
     console.log(`Attempting AQL request to: ${url}/artifactory/api/search/aql`);
-    const aqlQuery = 'items.find({"repo": "maven-local-spss-release"})'; // AQL query to find items in a specific repo
+    const aqlQuery = `items.find({"repo": "${repository}"})`; // AQL query to find items in a specific repo
     const response = await axios.post(`${url}/artifactory/api/search/aql`, aqlQuery, {
       auth: {
         username: username,
