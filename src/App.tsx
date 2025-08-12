@@ -283,6 +283,28 @@ function App() {
 
       
 
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <Form.Group as={Row} className="align-items-center">
+          <Col xs="auto">
+            <Form.Label>Items per page:</Form.Label>
+          </Col>
+          <Col xs="auto">
+            <Form.Select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </Form.Select>
+          </Col>
+        </Form.Group>
+      </div>
+
       <Table striped bordered hover responsive>
         <thead>
           <tr>
