@@ -117,6 +117,62 @@ function App() {
   // Removed handleStop, handleResume as they are replaced by new functionality
   // Removed filteredArtifacts as pagination is now handled by backend
 
+  const renderPaginationItems = () => {
+    const totalPages = Math.ceil(totalArtifacts / itemsPerPage);
+    const pageNeighbours = 2; // Number of pages to show on each side of the current page
+    const items = [];
+
+    if (totalPages <= 1) return null;
+
+    // Previous button
+    items.push(
+      <Pagination.Prev
+        key="prev"
+        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+        disabled={currentPage === 1}
+      />
+    );
+
+    // First page
+    if (currentPage > pageNeighbours + 1) {
+      items.push(<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>{1}</Pagination.Item>);
+      if (currentPage > pageNeighbours + 2) {
+        items.push(<Pagination.Ellipsis key="start-ellipsis" />);
+      }
+    }
+
+    // Pages around current page
+    const startPage = Math.max(1, currentPage - pageNeighbours);
+    const endPage = Math.min(totalPages, currentPage + pageNeighbours);
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <Pagination.Item key={i} active={i === currentPage} onClick={() => setCurrentPage(i)}>
+          {i}
+        </Pagination.Item>
+      );
+    }
+
+    // Last page
+    if (currentPage < totalPages - pageNeighbours) {
+      if (currentPage < totalPages - pageNeighbours - 1) {
+        items.push(<Pagination.Ellipsis key="end-ellipsis" />);
+      }
+      items.push(<Pagination.Item key={totalPages} onClick={() => setCurrentPage(totalPages)}>{totalPages}</Pagination.Item>);
+    }
+
+    // Next button
+    items.push(
+      <Pagination.Next
+        key="next"
+        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+        disabled={currentPage === totalPages}
+      />
+    );
+
+    return items;
+  };
+
   return (
     <Container className="mt-4">
       <h1 className="mb-4">JFrog Artifactory Artifact Lister</h1>
@@ -256,17 +312,7 @@ function App() {
 
       <div className="d-flex justify-content-center">
         <Pagination>
-          <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} />
-          {[...Array(Math.ceil(totalArtifacts / itemsPerPage))].map((_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === currentPage}
-              onClick={() => setCurrentPage(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-          <Pagination.Next onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === Math.ceil(totalArtifacts / itemsPerPage)} />
+          {renderPaginationItems()}
         </Pagination>
       </div>
     </Container>
