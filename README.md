@@ -4,23 +4,26 @@ This application is a desktop tool built with Electron and React to copy Maven r
 
 ## Features
 
-*   Copy Maven repositories from one location to another.
-*   Select source and destination directories.
-*   View the progress of the copy operation.
+* Copy Maven repositories from one location to another.
+* Select source and destination directories.
+* View the progress of the copy operation.
 
 ## Getting Started
 
 ### Prerequisites
 
-*   Node.js and npm installed.
+* Node.js and npm installed.
 
 ### Installation
 
-1.  Clone the repository:
+1. Clone the repository:
+
     ```sh
     git clone https://github.com/sekarbala123/MavenRepoCopierElectronApp.git
     ```
-2.  Install dependencies:
+
+2. Install dependencies:
+
     ```sh
     npm install
     ```
@@ -40,6 +43,7 @@ npm run build
 ```
 
 To run the electron app
+
 ```sh
 npm run electron
 ```
