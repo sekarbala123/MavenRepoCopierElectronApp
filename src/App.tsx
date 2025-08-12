@@ -114,9 +114,6 @@ function App() {
     }
   };
 
-  // Removed handleStop, handleResume as they are replaced by new functionality
-  // Removed filteredArtifacts as pagination is now handled by backend
-
   const renderPaginationItems = () => {
     const totalPages = Math.ceil(totalArtifacts / itemsPerPage);
     const pageNeighbours = 2; // Number of pages to show on each side of the current page
@@ -137,7 +134,7 @@ function App() {
     if (currentPage > pageNeighbours + 1) {
       items.push(<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>{1}</Pagination.Item>);
       if (currentPage > pageNeighbours + 2) {
-        items.push(<Pagination.Ellipsis key="start-ellipsis" />);
+        items.push(<Pagination.Ellipsis key="start-ellipsis" onClick={() => setCurrentPage(Math.max(1, currentPage - 5))} />);
       }
     }
 
@@ -156,7 +153,7 @@ function App() {
     // Last page
     if (currentPage < totalPages - pageNeighbours) {
       if (currentPage < totalPages - pageNeighbours - 1) {
-        items.push(<Pagination.Ellipsis key="end-ellipsis" />);
+        items.push(<Pagination.Ellipsis key="end-ellipsis" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 5))} />);
       }
       items.push(<Pagination.Item key={totalPages} onClick={() => setCurrentPage(totalPages)}>{totalPages}</Pagination.Item>);
     }
@@ -213,7 +210,7 @@ function App() {
                 type="password"
                 placeholder="Enter API Key or Password"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                onChange={(e) => setApiKey(e.target..value)}
                 disabled={isListing}
               />
             </Form.Group>
@@ -280,8 +277,6 @@ function App() {
           </Col>
         </Row>
       </Form>
-
-      
 
       <div className="d-flex justify-content-between align-items-center mb-3">
         <Form.Group as={Row} className="align-items-center">
