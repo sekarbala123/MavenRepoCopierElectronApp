@@ -210,7 +210,7 @@ function App() {
                 type="password"
                 placeholder="Enter API Key or Password"
                 value={apiKey}
-                onChange={(e) => setApiKey(e.target..value)}
+                onChange={(e) => setApiKey(e.target.value)}
                 disabled={isListing}
               />
             </Form.Group>
