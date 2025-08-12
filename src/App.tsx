@@ -83,11 +83,6 @@ function App() {
     const cleanupFetchAndSaveArtifactsResponse = window.electron.receive('fetch-and-save-artifacts-response', handleFetchAndSaveArtifactsResponse);
     const cleanupGetRepositoriesResponse = window.electron.receive('get-repositories-response', handleGetRepositoriesResponse);
 
-    // Fetch repositories when Artifactory URL, username, or API key changes
-    if (artifactoryUrl && username && apiKey) {
-      window.electron.send('get-repositories', { artifactoryUrl: sanitizeUrl(artifactoryUrl), username, apiKey });
-    }
-
     // Initial load and whenever pagination states change
     window.electron.send('get-paginated-artifacts', { page: currentPage, limit: itemsPerPage });
 
@@ -97,7 +92,7 @@ function App() {
       cleanupFetchAndSaveArtifactsResponse();
       cleanupGetRepositoriesResponse();
     };
-  }, [currentPage, itemsPerPage, artifactoryUrl, username, apiKey]); // Depend on these for re-fetching repositories
+  }, [currentPage, itemsPerPage]);
 
   // Helper function to sanitize URL
   const sanitizeUrl = (url: string): string => {
@@ -113,7 +108,13 @@ function App() {
     return sanitized;
   };
 
-  // Removed handleConnect, handleStop, handleResume as they are replaced by new functionality
+  const handleConnect = () => {
+    if (artifactoryUrl && username && apiKey) {
+      window.electron.send('get-repositories', { artifactoryUrl: sanitizeUrl(artifactoryUrl), username, apiKey });
+    }
+  };
+
+  // Removed handleStop, handleResume as they are replaced by new functionality
   // Removed filteredArtifacts as pagination is now handled by backend
 
   return (
@@ -207,10 +208,10 @@ function App() {
           <Col>
             <Button
               variant="primary"
-              onClick={() => window.electron.send('get-repositories', { artifactoryUrl: sanitizeUrl(artifactoryUrl), username, apiKey })}
+              onClick={handleConnect}
               disabled={!artifactoryUrl || !username || !apiKey}
             >
-              Fetch Repositories
+              Connect and Fetch Repositories
             </Button>
             <Button
               variant="success"
