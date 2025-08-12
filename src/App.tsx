@@ -83,11 +83,6 @@ function App() {
     const cleanupFetchAndSaveArtifactsResponse = window.electron.receive('fetch-and-save-artifacts-response', handleFetchAndSaveArtifactsResponse);
     const cleanupGetRepositoriesResponse = window.electron.receive('get-repositories-response', handleGetRepositoriesResponse);
 
-    // Fetch repositories when Artifactory URL, username, or API key changes
-    if (artifactoryUrl && username && apiKey) {
-      window.electron.send('get-repositories', { artifactoryUrl: sanitizeUrl(artifactoryUrl), username, apiKey });
-    }
-
     // Initial load and whenever pagination states change
     window.electron.send('get-paginated-artifacts', { page: currentPage, limit: itemsPerPage });
 
@@ -97,7 +92,7 @@ function App() {
       cleanupFetchAndSaveArtifactsResponse();
       cleanupGetRepositoriesResponse();
     };
-  }, [currentPage, itemsPerPage, artifactoryUrl, username, apiKey]); // Depend on these for re-fetching repositories
+  }, [currentPage, itemsPerPage]);
 
   // Helper function to sanitize URL
   const sanitizeUrl = (url: string): string => {
@@ -113,8 +108,67 @@ function App() {
     return sanitized;
   };
 
-  // Removed handleConnect, handleStop, handleResume as they are replaced by new functionality
-  // Removed filteredArtifacts as pagination is now handled by backend
+  const handleConnect = () => {
+    if (artifactoryUrl && username && apiKey) {
+      window.electron.send('get-repositories', { artifactoryUrl: sanitizeUrl(artifactoryUrl), username, apiKey });
+    }
+  };
+
+  const renderPaginationItems = () => {
+    const totalPages = Math.ceil(totalArtifacts / itemsPerPage);
+    const pageNeighbours = 2; // Number of pages to show on each side of the current page
+    const items = [];
+
+    if (totalPages <= 1) return null;
+
+    // Previous button
+    items.push(
+      <Pagination.Prev
+        key="prev"
+        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+        disabled={currentPage === 1}
+      />
+    );
+
+    // First page
+    if (currentPage > pageNeighbours + 1) {
+      items.push(<Pagination.Item key={1} onClick={() => setCurrentPage(1)}>{1}</Pagination.Item>);
+      if (currentPage > pageNeighbours + 2) {
+        items.push(<Pagination.Ellipsis key="start-ellipsis" onClick={() => setCurrentPage(Math.max(1, currentPage - 5))} />);
+      }
+    }
+
+    // Pages around current page
+    const startPage = Math.max(1, currentPage - pageNeighbours);
+    const endPage = Math.min(totalPages, currentPage + pageNeighbours);
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <Pagination.Item key={i} active={i === currentPage} onClick={() => setCurrentPage(i)}>
+          {i}
+        </Pagination.Item>
+      );
+    }
+
+    // Last page
+    if (currentPage < totalPages - pageNeighbours) {
+      if (currentPage < totalPages - pageNeighbours - 1) {
+        items.push(<Pagination.Ellipsis key="end-ellipsis" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 5))} />);
+      }
+      items.push(<Pagination.Item key={totalPages} onClick={() => setCurrentPage(totalPages)}>{totalPages}</Pagination.Item>);
+    }
+
+    // Next button
+    items.push(
+      <Pagination.Next
+        key="next"
+        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+        disabled={currentPage === totalPages}
+      />
+    );
+
+    return items;
+  };
 
   return (
     <Container className="mt-4">
@@ -207,10 +261,10 @@ function App() {
           <Col>
             <Button
               variant="primary"
-              onClick={() => window.electron.send('get-repositories', { artifactoryUrl: sanitizeUrl(artifactoryUrl), username, apiKey })}
+              onClick={handleConnect}
               disabled={!artifactoryUrl || !username || !apiKey}
             >
-              Fetch Repositories
+              Connect and Fetch Repositories
             </Button>
             <Button
               variant="success"
@@ -224,7 +278,27 @@ function App() {
         </Row>
       </Form>
 
-      
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <Form.Group as={Row} className="align-items-center">
+          <Col xs="auto">
+            <Form.Label>Items per page:</Form.Label>
+          </Col>
+          <Col xs="auto">
+            <Form.Select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </Form.Select>
+          </Col>
+        </Form.Group>
+      </div>
 
       <Table striped bordered hover responsive>
         <thead>
@@ -255,17 +329,7 @@ function App() {
 
       <div className="d-flex justify-content-center">
         <Pagination>
-          <Pagination.Prev onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} />
-          {[...Array(Math.ceil(totalArtifacts / itemsPerPage))].map((_, index) => (
-            <Pagination.Item
-              key={index + 1}
-              active={index + 1 === currentPage}
-              onClick={() => setCurrentPage(index + 1)}
-            >
-              {index + 1}
-            </Pagination.Item>
-          ))}
-          <Pagination.Next onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === Math.ceil(totalArtifacts / itemsPerPage)} />
+          {renderPaginationItems()}
         </Pagination>
       </div>
     </Container>
